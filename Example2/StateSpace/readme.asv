@@ -1,0 +1,63 @@
+This MATLAB software implements a mixture of Gaussians variational approximation with global and local boostings for estimating
+the complex time-varying regression models.
+
+How to run the mixture of Gaussians variational approximation with global and local boosting steps.
+
+The data we use for this example is given in Zdata.mat (simulated data) and FamaFrenchData.mat (Real Data).
+
+
+The matlab code for global boosting steps:
+
+1) VB_StateSpaceRegression_Global_Rep_MeanField_RealData.m: run a mixture of Gaussians variational approximation with global boosting steps. Reparameterisation trick is used to update 
+the precision matrix for each component. 
+
+2) VB_StateSpaceRegression_Global_Rep_MeanField.m: run a mixture of Gaussians variational approximation with global boosting steps. The control variate method is used to update the precision
+matrix for each component.
+
+3) VB_StateSpaceRegression_Global_Rep_RealData.m: run a mixture of Gaussians variational approximation with local boosting steps.
+
+4) VB_StateSpaceRegression_Global.m: 
+
+5) VB_StateSpaceRegression_Local_Rep_MeanField.m
+
+6) VB_StateSpaceRegression_Local_Rep_RealData.m
+
+7) VB_StateSpaceRegression_Local_Rep.m:
+
+obtain_index_full_randomeffect.m
+
+-- to obtain the index of the random effects in the precision matrix
+
+obtain_grad_logposterior_logit_some.m
+
+-- main file used to obtain the derivative of the log-posterior of the random effects logistic model with respect to the model parameters and random effects.
+
+obtain_grad_q.m
+
+-- Main file used to obtain the derivative of the log of the mixture of gaussians density with respect to model parameters and random effects.
+
+initialisation_global_update_used.m
+
+-- obtaining the initial values of the variational means and diagonal components of the precision matrix of the random effects (Global Boosting).
+
+initialisation_local_update_used.m
+
+-- obtaining the initial values of the variational means and diagonal components of the precision matrix of the random effects (Local Boosting).
+
+initialisation_global_parameter.m
+
+-- obtaining the initial values of the variational means of the global parameters.
+
+SampleFromMixture_Weight.m
+
+-- generate samples of random effects and parameters from the mixture of Gaussians variational approximation.
+
+
+Calculating_RKL_higherdim.m
+
+-- function to calculate the criteria to select poorly approximate random effects.
+
+
+Other useful functions are provided in the folder.
+
+The user need to add the path to the results folder to generate the figures in section 6.1.

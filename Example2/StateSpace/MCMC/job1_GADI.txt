@@ -1,0 +1,14 @@
+#!/bin/bash
+#PBS -P hc87
+#PBS -q normal
+#PBS -l storage=scratch/jz21
+#PBS -l walltime=48:00:00
+#PBS -l ncpus=1
+#PBS -l mem=50GB
+#PBS -l jobfs=10GB
+#PBS -l software=matlab_unsw
+#PBS -l wd
+module load matlab/R2020b
+module load matlab_licence/unsw
+sleep $((RANDOM % 2000))
+matlab -nodesktop  -nodisplay -nosplash -r MCMC_HMC
