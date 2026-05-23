@@ -1,0 +1,58 @@
+This MATLAB software implements a mixture of Gaussians variational approximation with global and local boostings for estimating
+the random effects logistic regression model with bimodal priors.
+
+How to run the copula of the mixture variational approximation
+
+I have provided you with the .mat file containing the variational parameters for the first component of the mixture under Result folder.
+
+The main matlab code is the gmmCopSkew_general.m
+
+initialisation_mix2_general.m
+
+-- to obtain the initial values for mu.
+
+gmmCopSkew_general.m
+
+-- main file used to obtain the variational parameters of the mixture with natural gradients.
+
+gmmCop_mubdweight.m
+
+-- Main file used to obtain the variational parameters of the mixture without natural gradients.
+
+inverse_fisher_times_grad.m
+
+-- obtaining the inverse of fisher information matrix multiply with gradient of the lower bound for updating B and d.
+
+inverse_fisher_times_grad_onlyD.m
+
+-- obtaining the inverse of fisher information matrix multiply with gradient of the lower bound for updating d only.
+
+LogisticLogPosteriorSkewmix.m
+
+-- calculate log posterior.
+
+neg_log_gmm_DiffFactor_TransformationGeneral.m
+
+-- function to calculate the derivatives of negative log mixture of normals.
+
+obtain_grad_logposterior_logit_skewmix.m
+
+-- function to obtain the gradient of log of the target posterior distribution
+
+SampleFromMixtureDiffFactorTransformationOneAtTimeGeneral.m
+
+-- function to generate sample from the current variational approximation
+
+plot_Logistic.m
+
+-- function to obtain figures in section 4.3
+
+YJ_psi_to_theta.m, YJ_theta_to_psi.m
+
+-- Additional functions used to generate samples from the copula of the mixture.
+
+Other useful functions are provided in the folder.
+
+folder results containing all the results for section 4.3
+
+The user need to add the path to the results folder to generate the figures in section 4.3.
