@@ -65,7 +65,7 @@ adapt_grad_weight_mu = 0;
 adapt_grad_weight_T = 0;
 adapt_grad_weight_weight = 0;
 
-max_iter = 10; %number of iterations
+max_iter = 5000; %number of iterations
 mix_Weights = 1;
 mix_Weights_actual=1;
 num_some= num_randeffect; %the number of random effects with complex prior distributions
