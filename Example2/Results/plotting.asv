@@ -1,0 +1,1575 @@
+
+%this code reproduce figures for time-varying regression model in Section 6.2 and Section S8 of the online supplement. 
+% To run this need to add functions folder to the path.
+addpath('.\functions');
+
+
+
+
+
+
+
+
+
+%% Figure S7 of the online supplement
+%sim = 4, Agric = 5, Food = 5.
+figure
+for i=1:20
+    load(['mixCop_Global',num2str(i),'_200_statespace_Z_regression_FF.mat']);
+    mean_collect(i,1) = mean(measure_latent);
+end
+subplot(1,3,1);plot(mean_collect,'LineWidth',3);xlabel({'number of components'},'FontSize',20);ylabel({'s[K]'},'FontSize',20);set(gca,'FontSize',20);title('Sim','FontSize',20);
+set(gca,'FontSize',20)
+
+for i=1:20
+    load(['mixCop_Global',num2str(i),'_571_statespace_Z_regression_FF_RealData_Agric.mat']);
+    mean_collect(i,1) = mean(measure_latent);
+end
+subplot(1,3,2);plot(mean_collect,'LineWidth',3);xlabel({'number of components'},'FontSize',20);ylabel({'s[K]'},'FontSize',20);set(gca,'FontSize',20);title('Agric','FontSize',20);
+set(gca,'FontSize',20)
+
+for i=1:20
+    load(['mixCop_Global',num2str(i),'_571_statespace_Z_regression_FF_RealData_Food.mat']);
+    mean_collect(i,1) = mean(measure_latent);
+end
+subplot(1,3,3);plot(mean_collect,'LineWidth',3);xlabel({'number of components'},'FontSize',20);ylabel({'s[K]'},'FontSize',20);set(gca,'FontSize',20);title('Food','FontSize',20);
+set(gca,'FontSize',20)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Figure 7 of the main paper.
+load('Zdata.mat');
+nrSamples=100000;
+num_points_ks=1000;
+load('HMC_Z_StateSpace.mat');
+i=4;
+load(['mixCop_Global',num2str(i),'_200_statespace_Z_regression_FF.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+i=1;
+load(['mixCop_Global',num2str(i),'_200_statespace_Z_regression_FF.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_Precs = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+load('wd_polypharm__tcop_StateSpace_Z_sim.mat');
+[theta_tcop]= VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'');
+
+load('wd_polypharm_YJ_tcop_StateSpace_Z_sim.mat');
+[theta_tcop_YJ]= VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'YJ');
+
+load('wd_polypharm_YJdouble_tcop_StateSpace_Z_sim.mat');
+[theta_tcop_doubleYJ] = VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'YJdouble');
+
+
+dim_states = 4;
+num_states = 200;
+id1 = (1:dim_states:dim_states*num_states)';
+id2 = (2:dim_states:dim_states*num_states)';
+id3 = (3:dim_states:dim_states*num_states)';
+id4 = (4:dim_states:dim_states*num_states)';
+
+mean_MCMC = mean(Post.theta,1);
+low_quan_MCMC = quantile(Post.theta,0.025);
+upper_quan_MCMC = quantile(Post.theta,0.975);
+
+mean_MixN = mean(theta_cop1_MixN,2);
+low_quan_MixN = quantile(theta_cop1_MixN,0.025,2);
+upper_quan_MixN = quantile(theta_cop1_MixN,0.975,2);
+
+mean_N = mean(theta_cop1_Precs,2);
+low_quan_N = quantile(theta_cop1_Precs,0.025,2);
+upper_quan_N = quantile(theta_cop1_Precs,0.975,2);
+
+mean_tcop_YJ = mean(theta_tcop_YJ,2);
+low_quan_tcop_YJ = quantile(theta_tcop_YJ,0.025,2);
+upper_quan_tcop_YJ = quantile(theta_tcop_YJ,0.975,2);
+
+
+mean_tcop_dYJ = mean(theta_tcop_doubleYJ,2);
+low_quan_tcop_dYJ = quantile(theta_tcop_doubleYJ,0.025,2);
+upper_quan_tcop_dYJ = quantile(theta_tcop_doubleYJ,0.975,2);
+
+% --- MCMC (red) ---
+subplot(2,2,1);
+h1 = plot(mean_MCMC(id1),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id1),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id1),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id1),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id1),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id1),'LineWidth',2,'Color','g');
+
+h3 = plot(beta1,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_0','FontSize',20);
+
+subplot(2,2,2);
+h1 = plot(mean_MCMC(id2),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id2),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id2),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id2),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id2),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id2),'LineWidth',2,'Color','g');
+
+h3 = plot(beta2,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_1','FontSize',20);
+
+
+subplot(2,2,3);
+h1 = plot(mean_MCMC(id3),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id3),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id3),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id3),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id3),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id3),'LineWidth',2,'Color','g');
+
+h3 = plot(beta3,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_2','FontSize',20);
+
+subplot(2,2,4);
+h1 = plot(mean_MCMC(id4),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id4),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id4),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id4),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id4),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id4),'LineWidth',2,'Color','g');
+
+h3 = plot(beta4,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_3','FontSize',20);
+legend([h1 h2 h3], {'HMC','MixGau','true'}, 'Location','best','FontSize',20);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Figure S9 of the main paper
+load('Zdata.mat');
+nrSamples=100000;
+num_points_ks=1000;
+load('HMC_Z_StateSpace.mat');
+i=4;
+load(['mixCop_Global',num2str(i),'_200_statespace_Z_regression_FF.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+i=1;
+load(['mixCop_Global',num2str(i),'_200_statespace_Z_regression_FF.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_Precs = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+load('wd_polypharm__tcop_StateSpace_Z_sim.mat');
+[theta_tcop]= VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'');
+
+load('wd_polypharm_YJ_tcop_StateSpace_Z_sim.mat');
+[theta_tcop_YJ]= VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'YJ');
+
+load('wd_polypharm_YJdouble_tcop_StateSpace_Z_sim.mat');
+[theta_tcop_doubleYJ] = VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'YJdouble');
+
+
+dim_states = 4;
+num_states = 200;
+id1 = (1:dim_states:dim_states*num_states)';
+id2 = (2:dim_states:dim_states*num_states)';
+id3 = (3:dim_states:dim_states*num_states)';
+id4 = (4:dim_states:dim_states*num_states)';
+
+mean_MCMC = mean(Post.theta,1);
+low_quan_MCMC = quantile(Post.theta,0.005);
+upper_quan_MCMC = quantile(Post.theta,0.995);
+
+mean_MixN = mean(theta_cop1_MixN,2);
+low_quan_MixN = quantile(theta_cop1_MixN,0.005,2);
+upper_quan_MixN = quantile(theta_cop1_MixN,0.995,2);
+
+% mean_N = mean(theta_cop1_Precs,2);
+% low_quan_N = quantile(theta_cop1_Precs,0.025,2);
+% upper_quan_N = quantile(theta_cop1_Precs,0.975,2);
+% 
+% mean_tcop_YJ = mean(theta_tcop_YJ,2);
+% low_quan_tcop_YJ = quantile(theta_tcop_YJ,0.025,2);
+% upper_quan_tcop_YJ = quantile(theta_tcop_YJ,0.975,2);
+% 
+% 
+% mean_tcop_dYJ = mean(theta_tcop_doubleYJ,2);
+% low_quan_tcop_dYJ = quantile(theta_tcop_doubleYJ,0.025,2);
+% upper_quan_tcop_dYJ = quantile(theta_tcop_doubleYJ,0.975,2);
+
+% --- MCMC (red) ---
+subplot(2,2,1);
+h1 = plot(mean_MCMC(id1),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id1),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id1),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id1),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id1),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id1),'LineWidth',2,'Color','g');
+
+h3 = plot(beta1,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_0','FontSize',20);
+
+subplot(2,2,2);
+h1 = plot(mean_MCMC(id2),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id2),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id2),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id2),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id2),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id2),'LineWidth',2,'Color','g');
+
+h3 = plot(beta2,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_1','FontSize',20);
+
+
+subplot(2,2,3);
+h1 = plot(mean_MCMC(id3),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id3),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id3),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id3),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id3),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id3),'LineWidth',2,'Color','g');
+
+h3 = plot(beta3,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_2','FontSize',20);
+
+subplot(2,2,4);
+h1 = plot(mean_MCMC(id4),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id4),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id4),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id4),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id4),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id4),'LineWidth',2,'Color','g');
+
+h3 = plot(beta4,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_3','FontSize',20);
+legend([h1 h2 h3], {'HMC','MixGau','true'}, 'Location','best','FontSize',20);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Figure S8 of the online supplement
+load('Zdata.mat');
+nrSamples=100000;
+num_points_ks=1000;
+load('HMC_Z_StateSpace.mat');
+i=4;
+load(['mixCop_Global',num2str(i),'_200_statespace_Z_regression_FF.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+i=1;
+load(['mixCop_Global',num2str(i),'_200_statespace_Z_regression_FF.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_Precs = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+load('wd_polypharm__tcop_StateSpace_Z_sim.mat');
+[theta_tcop]= VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'');
+
+load('wd_polypharm_YJ_tcop_StateSpace_Z_sim.mat');
+[theta_tcop_YJ]= VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'YJ');
+
+load('wd_polypharm_YJdouble_tcop_StateSpace_Z_sim.mat');
+[theta_tcop_doubleYJ] = VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'YJdouble');
+
+
+dim_states = 4;
+num_states = 200;
+id1 = (1:dim_states:dim_states*num_states)';
+id2 = (2:dim_states:dim_states*num_states)';
+id3 = (3:dim_states:dim_states*num_states)';
+id4 = (4:dim_states:dim_states*num_states)';
+
+mean_MCMC = mean(Post.theta,1);
+low_quan_MCMC = quantile(Post.theta,0.025);
+upper_quan_MCMC = quantile(Post.theta,0.975);
+
+mean_MixN = mean(theta_cop1_MixN,2);
+low_quan_MixN = quantile(theta_cop1_MixN,0.025,2);
+upper_quan_MixN = quantile(theta_cop1_MixN,0.975,2);
+
+mean_N = mean(theta_cop1_Precs,2);
+low_quan_N = quantile(theta_cop1_Precs,0.025,2);
+upper_quan_N = quantile(theta_cop1_Precs,0.975,2);
+
+mean_tcop_YJ = mean(theta_tcop_YJ,2);
+low_quan_tcop_YJ = quantile(theta_tcop_YJ,0.025,2);
+upper_quan_tcop_YJ = quantile(theta_tcop_YJ,0.975,2);
+
+
+mean_tcop_dYJ = mean(theta_tcop_doubleYJ,2);
+low_quan_tcop_dYJ = quantile(theta_tcop_doubleYJ,0.025,2);
+upper_quan_tcop_dYJ = quantile(theta_tcop_doubleYJ,0.975,2);
+
+% --- MCMC (red) ---
+subplot(2,2,1);
+h1 = plot(beta1,'LineWidth',2,'Color','r');   % store handle
+hold on
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id1),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id1),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id1),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_tcop_YJ(id1),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_tcop_YJ(id1),'LineWidth',2,'Color','b');
+plot(upper_quan_tcop_YJ(id1),'LineWidth',2,'Color','b');
+
+h4 = plot(mean_tcop_dYJ(id1),'LineWidth',2,'Color','y');    % store handle
+plot(low_quan_tcop_dYJ(id1),'LineWidth',2,'Color','y');
+plot(upper_quan_tcop_dYJ(id1),'LineWidth',2,'Color','y');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_0','FontSize',20);
+
+subplot(2,2,2);
+h1 = plot(beta2,'LineWidth',2,'Color','r');   % store handle
+hold on
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id2),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id2),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id2),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_tcop_YJ(id2),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_tcop_YJ(id2),'LineWidth',2,'Color','b');
+plot(upper_quan_tcop_YJ(id2),'LineWidth',2,'Color','b');
+
+h4 = plot(mean_tcop_dYJ(id2),'LineWidth',2,'Color','y');    % store handle
+plot(low_quan_tcop_dYJ(id2),'LineWidth',2,'Color','y');
+plot(upper_quan_tcop_dYJ(id2),'LineWidth',2,'Color','y');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_1','FontSize',20);
+
+
+subplot(2,2,3);
+h1 = plot(beta3,'LineWidth',2,'Color','r');   % store handle
+hold on
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id3),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id3),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id3),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_tcop_YJ(id3),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_tcop_YJ(id3),'LineWidth',2,'Color','b');
+plot(upper_quan_tcop_YJ(id3),'LineWidth',2,'Color','b');
+
+h4 = plot(mean_tcop_dYJ(id3),'LineWidth',2,'Color','y');    % store handle
+plot(low_quan_tcop_dYJ(id3),'LineWidth',2,'Color','y');
+plot(upper_quan_tcop_dYJ(id3),'LineWidth',2,'Color','y');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_2','FontSize',20);
+
+subplot(2,2,4);
+h1 = plot(beta4,'LineWidth',2,'Color','r');   % store handle
+hold on
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id4),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id4),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id4),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_tcop_YJ(id4),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_tcop_YJ(id4),'LineWidth',2,'Color','b');
+plot(upper_quan_tcop_YJ(id4),'LineWidth',2,'Color','b');
+
+h4 = plot(mean_tcop_dYJ(id4),'LineWidth',2,'Color','y');    % store handle
+plot(low_quan_tcop_dYJ(id4),'LineWidth',2,'Color','y');
+plot(upper_quan_tcop_dYJ(id4),'LineWidth',2,'Color','y');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_3','FontSize',20);
+legend([h1 h2 h3 h4], {'true','MixGau','YJ-tcop','D-YJ-tcop'}, 'Location','best','FontSize',20);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Figure S10 of the online supplement
+
+load('Zdata.mat');
+nrSamples=100000;
+num_points_ks=1000;
+load('HMC_Z_StateSpace.mat');
+i=4;
+load(['mixCop_Global',num2str(i),'_200_statespace_Z_regression_FF.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+i=1;
+load(['mixCop_Global',num2str(i),'_200_statespace_Z_regression_FF.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_Precs = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+load('wd_polypharm__tcop_StateSpace_Z_sim.mat');
+[theta_tcop]= VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'');
+
+load('wd_polypharm_YJ_tcop_StateSpace_Z_sim.mat');
+[theta_tcop_YJ]= VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'YJ');
+
+load('wd_polypharm_YJdouble_tcop_StateSpace_Z_sim.mat');
+[theta_tcop_doubleYJ] = VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'YJdouble');
+
+
+dim_states = 4;
+num_states = 200;
+id1 = (1:dim_states:dim_states*num_states)';
+id2 = (2:dim_states:dim_states*num_states)';
+id3 = (3:dim_states:dim_states*num_states)';
+id4 = (4:dim_states:dim_states*num_states)';
+
+mean_MCMC = mean(Post.theta,1);
+low_quan_MCMC = quantile(Post.theta,0.005);
+upper_quan_MCMC = quantile(Post.theta,0.995);
+
+mean_MixN = mean(theta_cop1_MixN,2);
+low_quan_MixN = quantile(theta_cop1_MixN,0.005,2);
+upper_quan_MixN = quantile(theta_cop1_MixN,0.995,2);
+
+mean_N = mean(theta_cop1_Precs,2);
+low_quan_N = quantile(theta_cop1_Precs,0.005,2);
+upper_quan_N = quantile(theta_cop1_Precs,0.995,2);
+
+mean_tcop_YJ = mean(theta_tcop_YJ,2);
+low_quan_tcop_YJ = quantile(theta_tcop_YJ,0.005,2);
+upper_quan_tcop_YJ = quantile(theta_tcop_YJ,0.995,2);
+
+
+mean_tcop_dYJ = mean(theta_tcop_doubleYJ,2);
+low_quan_tcop_dYJ = quantile(theta_tcop_doubleYJ,0.005,2);
+upper_quan_tcop_dYJ = quantile(theta_tcop_doubleYJ,0.995,2);
+
+% --- MCMC (red) ---
+subplot(2,2,1);
+h1 = plot(beta1,'LineWidth',2,'Color','r');   % store handle
+hold on
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id1),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id1),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id1),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_tcop_YJ(id1),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_tcop_YJ(id1),'LineWidth',2,'Color','b');
+plot(upper_quan_tcop_YJ(id1),'LineWidth',2,'Color','b');
+
+h4 = plot(mean_tcop_dYJ(id1),'LineWidth',2,'Color','y');    % store handle
+plot(low_quan_tcop_dYJ(id1),'LineWidth',2,'Color','y');
+plot(upper_quan_tcop_dYJ(id1),'LineWidth',2,'Color','y');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_0','FontSize',20);
+
+subplot(2,2,2);
+h1 = plot(beta2,'LineWidth',2,'Color','r');   % store handle
+hold on
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id2),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id2),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id2),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_tcop_YJ(id2),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_tcop_YJ(id2),'LineWidth',2,'Color','b');
+plot(upper_quan_tcop_YJ(id2),'LineWidth',2,'Color','b');
+
+h4 = plot(mean_tcop_dYJ(id2),'LineWidth',2,'Color','y');    % store handle
+plot(low_quan_tcop_dYJ(id2),'LineWidth',2,'Color','y');
+plot(upper_quan_tcop_dYJ(id2),'LineWidth',2,'Color','y');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_1','FontSize',20);
+
+
+subplot(2,2,3);
+h1 = plot(beta3,'LineWidth',2,'Color','r');   % store handle
+hold on
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id3),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id3),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id3),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_tcop_YJ(id3),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_tcop_YJ(id3),'LineWidth',2,'Color','b');
+plot(upper_quan_tcop_YJ(id3),'LineWidth',2,'Color','b');
+
+h4 = plot(mean_tcop_dYJ(id3),'LineWidth',2,'Color','y');    % store handle
+plot(low_quan_tcop_dYJ(id3),'LineWidth',2,'Color','y');
+plot(upper_quan_tcop_dYJ(id3),'LineWidth',2,'Color','y');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_2','FontSize',20);
+
+subplot(2,2,4);
+h1 = plot(beta4,'LineWidth',2,'Color','r');   % store handle
+hold on
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id4),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id4),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id4),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_tcop_YJ(id4),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_tcop_YJ(id4),'LineWidth',2,'Color','b');
+plot(upper_quan_tcop_YJ(id4),'LineWidth',2,'Color','b');
+
+h4 = plot(mean_tcop_dYJ(id4),'LineWidth',2,'Color','y');    % store handle
+plot(low_quan_tcop_dYJ(id4),'LineWidth',2,'Color','y');
+plot(upper_quan_tcop_dYJ(id4),'LineWidth',2,'Color','y');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_3','FontSize',20);
+legend([h1 h2 h3 h4], {'true','MixGau','YJ-tcop','D-YJ-tcop'}, 'Location','best','FontSize',20);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+
+% load('Zdata.mat');
+% nrSamples=100000;
+% num_points_ks=1000;
+% load('HMC_Z_StateSpace.mat');
+% i=4;
+% load(['mixCop_Global',num2str(i),'_200_statespace_Z_regression_FF.mat']);
+% for k = 1:length(mix_Mu)
+%     mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+% end
+% theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+% 
+% i=1;
+% load(['mixCop_Global',num2str(i),'_200_statespace_Z_regression_FF.mat']);
+% for k = 1:length(mix_Mu)
+%     mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+% end
+% theta_cop1_Precs = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+% 
+% load('wd_polypharm__tcop_StateSpace_Z_sim.mat');
+% [theta_tcop]= VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'');
+% 
+% load('wd_polypharm_YJ_tcop_StateSpace_Z_sim.mat');
+% [theta_tcop_YJ]= VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'YJ');
+% 
+% load('wd_polypharm_iGH_tcop_StateSpace_Z_sim.mat');
+% [theta_tcop_iGH] = VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'iGH');
+% 
+% load('wd_polypharm_YJdouble_tcop_StateSpace_Z_sim.mat');
+% [theta_tcop_doubleYJ] = VArand_tcop(nrSamples,eta,mu,tkappa,l,log_nu,'YJdouble');
+% 
+% 
+% dim_states = 4;
+% num_states = 200;
+% id1 = (1:dim_states:dim_states*num_states)';
+% id2 = (2:dim_states:dim_states*num_states)';
+% id3 = (3:dim_states:dim_states*num_states)';
+% id4 = (4:dim_states:dim_states*num_states)';
+% 
+% theta_cop1_MixN_beta1 = theta_cop1_MixN(id1,:);
+% theta_cop1_MixN_beta2 = theta_cop1_MixN(id2,:);
+% theta_cop1_MixN_beta3 = theta_cop1_MixN(id3,:);
+% theta_cop1_MixN_beta4 = theta_cop1_MixN(id4,:);
+% 
+% theta_HMC_beta1 = Post.theta(:,id1);
+% theta_HMC_beta2 = Post.theta(:,id2);
+% theta_HMC_beta3 = Post.theta(:,id3);
+% theta_HMC_beta4 = Post.theta(:,id4);
+% 
+% theta_tcop_YJ_beta1 = theta_tcop_YJ(id1,:);
+% theta_tcop_YJ_beta2 = theta_tcop_YJ(id2,:);
+% theta_tcop_YJ_beta3 = theta_tcop_YJ(id3,:);
+% theta_tcop_YJ_beta4 = theta_tcop_YJ(id4,:);
+% 
+% theta_tcop_iGH_beta1 = theta_tcop_iGH(id1,:);
+% theta_tcop_iGH_beta2 = theta_tcop_iGH(id2,:);
+% theta_tcop_iGH_beta3 = theta_tcop_iGH(id3,:);
+% theta_tcop_iGH_beta4 = theta_tcop_iGH(id4,:);
+% 
+% 
+% theta_tcop_dYJ_beta1 = theta_tcop_doubleYJ(id1,:);
+% theta_tcop_dYJ_beta2 = theta_tcop_doubleYJ(id2,:);
+% theta_tcop_dYJ_beta3 = theta_tcop_doubleYJ(id3,:);
+% theta_tcop_dYJ_beta4 = theta_tcop_doubleYJ(id4,:);
+% 
+% marginal = 50;
+% subplot(2,4,1);
+% [f,xi]=ksdensity(theta_HMC_beta2(:,marginal),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% hold on
+% [f,xi]=ksdensity(theta_cop1_MixN_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_YJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_dYJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% %[f,xi]=ksdensity(theta_tcop_iGH_beta2(marginal,:),'NumPoints',num_points_ks);
+% %plot(xi,(f),'LineWidth',2);
+% title(['\beta_{1,50}'],'FontSize',20);
+% set(gca,'FontSize',20);
+% axis([-10 10 0 Inf])
+% 
+% marginal = 51;
+% subplot(2,4,2);
+% [f,xi]=ksdensity(theta_HMC_beta2(:,marginal),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% hold on
+% [f,xi]=ksdensity(theta_cop1_MixN_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_YJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_dYJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% %[f,xi]=ksdensity(theta_tcop_iGH_beta2(marginal,:),'NumPoints',num_points_ks);
+% %plot(xi,(f),'LineWidth',2);
+% title(['\beta_{1,51}'],'FontSize',20);
+% set(gca,'FontSize',20);
+% axis([-10 10 0 Inf])
+% 
+% marginal = 100;
+% subplot(2,4,3);
+% [f,xi]=ksdensity(theta_HMC_beta2(:,marginal),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% hold on
+% [f,xi]=ksdensity(theta_cop1_MixN_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_YJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_dYJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% %[f,xi]=ksdensity(theta_tcop_iGH_beta2(marginal,:),'NumPoints',num_points_ks);
+% %plot(xi,(f),'LineWidth',2);
+% title(['\beta_{1,100}'],'FontSize',20);
+% set(gca,'FontSize',20);
+% axis([-10 10 0 Inf])
+% 
+% marginal = 101;
+% subplot(2,4,4);
+% [f,xi]=ksdensity(theta_HMC_beta2(:,marginal),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% hold on
+% [f,xi]=ksdensity(theta_cop1_MixN_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_YJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_dYJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,(f),'LineWidth',2);
+% %[f,xi]=ksdensity(theta_tcop_iGH_beta2(marginal,:),'NumPoints',num_points_ks);
+% %plot(xi,(f),'LineWidth',2);
+% title(['\beta_{1,101}'],'FontSize',20);
+% set(gca,'FontSize',20);
+% axis([-10 10 0 Inf])
+% 
+% marginal = 50;
+% subplot(2,4,5);
+% [f,xi]=ksdensity(theta_HMC_beta2(:,marginal),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% hold on
+% [f,xi]=ksdensity(theta_cop1_MixN_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_YJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_dYJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% %[f,xi]=ksdensity(theta_tcop_iGH_beta2(marginal,:),'NumPoints',num_points_ks);
+% %plot(xi,log(f),'LineWidth',2);
+% title(['\beta_{1,50}'],'FontSize',20);
+% set(gca,'FontSize',20);
+% axis([-10 10 -20 Inf])
+% 
+% marginal = 51;
+% subplot(2,4,6);
+% [f,xi]=ksdensity(theta_HMC_beta2(:,marginal),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% hold on
+% [f,xi]=ksdensity(theta_cop1_MixN_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_YJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_dYJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% %[f,xi]=ksdensity(theta_tcop_iGH_beta2(marginal,:),'NumPoints',num_points_ks);
+% %plot(xi,log(f),'LineWidth',2);
+% title(['\beta_{1,51}'],'FontSize',20);
+% set(gca,'FontSize',20);
+% axis([-10 10 -20 Inf])
+% 
+% marginal = 100;
+% subplot(2,4,7);
+% [f,xi]=ksdensity(theta_HMC_beta2(:,marginal),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% hold on
+% [f,xi]=ksdensity(theta_cop1_MixN_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_YJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_dYJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% %[f,xi]=ksdensity(theta_tcop_iGH_beta2(marginal,:),'NumPoints',num_points_ks);
+% %plot(xi,log(f),'LineWidth',2);
+% title(['\beta_{1,100}'],'FontSize',20);
+% set(gca,'FontSize',20);
+% axis([-10 10 -20 Inf])
+% 
+% marginal = 101;
+% subplot(2,4,8);
+% [f,xi]=ksdensity(theta_HMC_beta2(:,marginal),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% hold on
+% [f,xi]=ksdensity(theta_cop1_MixN_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_YJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% [f,xi]=ksdensity(theta_tcop_dYJ_beta2(marginal,:),'NumPoints',num_points_ks);
+% plot(xi,log(f),'LineWidth',2);
+% %[f,xi]=ksdensity(theta_tcop_iGH_beta2(marginal,:),'NumPoints',num_points_ks);
+% %plot(xi,log(f),'LineWidth',2);
+% title(['\beta_{1,101}'],'FontSize',20);
+% set(gca,'FontSize',20);
+% axis([-10 10 -20 Inf])
+% legend({'MixGau','HMC','YJ-tcop','dYJ-tcop','iGH-tcop'},'FontSize',20)
+% 
+% 
+% 
+% 
+% subplot(1,2,1);
+% scatter(theta_cop1_MixN_beta2(50,:)',theta_cop1_MixN_beta2(51,:)')
+% hold on
+% scatter(theta_HMC_beta2(:,50),theta_HMC_beta2(:,51))
+% scatter(theta_tcop_YJ_beta2(50,:)',theta_tcop_YJ_beta2(51,:)')
+% scatter(theta_tcop_dYJ_beta2(50,:)',theta_tcop_dYJ_beta2(51,:)')
+% xlabel('\beta_{1,50}','FontSize',20);
+% ylabel('\beta_{1,51}','FontSize',20);
+% 
+% subplot(1,2,2);
+% scatter(theta_cop1_MixN_beta2(100,:)',theta_cop1_MixN_beta2(101,:)')
+% hold on
+% scatter(theta_HMC_beta2(:,100),theta_HMC_beta2(:,101))
+% scatter(theta_tcop_YJ_beta2(100,:)',theta_tcop_YJ_beta2(101,:)')
+% scatter(theta_tcop_dYJ_beta2(100,:)',theta_tcop_dYJ_beta2(101,:)')
+% xlabel('\beta_{1,100}','FontSize',20);
+% ylabel('\beta_{1,101}','FontSize',20);
+% legend({'MixGau','HMC','YJ-tcop','dYJ-tcop'},'FontSize',20)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Figure 8 of the main paper
+
+
+nrSamples=100000;
+num_points_ks=1000;
+load('HMC_Z_StateSpace_Food.mat');
+i=5;
+load(['mixCop_Global',num2str(i),'_571_statespace_Z_regression_FF_RealData_Food.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+i=5;
+load(['mixCop_Global',num2str(i),'_571_statespace_Z_regression_FF_MF_RealData_Food.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixMF = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+
+dim_states = 4;
+num_states = 571;
+id1 = (1:dim_states:dim_states*num_states)';
+id2 = (2:dim_states:dim_states*num_states)';
+id3 = (3:dim_states:dim_states*num_states)';
+id4 = (4:dim_states:dim_states*num_states)';
+
+mean_MCMC = mean(Post.theta,1);
+low_quan_MCMC = quantile(Post.theta,0.025);
+upper_quan_MCMC = quantile(Post.theta,0.975);
+
+mean_MixN = mean(theta_cop1_MixN,2);
+low_quan_MixN = quantile(theta_cop1_MixN,0.025,2);
+upper_quan_MixN = quantile(theta_cop1_MixN,0.975,2);
+
+mean_MixMF = mean(theta_cop1_MixMF,2);
+low_quan_MixMF = quantile(theta_cop1_MixMF,0.025,2);
+upper_quan_MixMF = quantile(theta_cop1_MixMF,0.975,2);
+
+
+
+% --- MCMC (red) ---
+subplot(2,2,1);
+h1 = plot(mean_MCMC(id1),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id1),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id1),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id1),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id1),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id1),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_MixMF(id1),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_MixMF(id1),'LineWidth',2,'Color','b');
+plot(upper_quan_MixMF(id1),'LineWidth',2,'Color','b');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_0','FontSize',20);
+
+subplot(2,2,2);
+h1 = plot(mean_MCMC(id2),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id2),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id2),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id2),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id2),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id2),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_MixMF(id2),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_MixMF(id2),'LineWidth',2,'Color','b');
+plot(upper_quan_MixMF(id2),'LineWidth',2,'Color','b');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_1','FontSize',20);
+
+
+subplot(2,2,3);
+h1 = plot(mean_MCMC(id3),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id3),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id3),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id3),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id3),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id3),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_MixMF(id3),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_MixMF(id3),'LineWidth',2,'Color','b');
+plot(upper_quan_MixMF(id3),'LineWidth',2,'Color','b');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_2','FontSize',20);
+
+subplot(2,2,4);
+h1 = plot(mean_MCMC(id4),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id4),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id4),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id4),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id4),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id4),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_MixMF(id4),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_MixMF(id4),'LineWidth',2,'Color','b');
+plot(upper_quan_MixMF(id4),'LineWidth',2,'Color','b');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_3','FontSize',20);
+legend([h1 h2 h3], {'HMC','MixGau','MixMF'}, 'Location','best','FontSize',20);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Figure 9 of the main paper
+%marginal and bivariate density
+
+nrSamples=100000;
+num_points_ks=1000;
+load('HMC_Z_StateSpace_Food.mat');
+i=5;
+load(['mixCop_Global',num2str(i),'_571_statespace_Z_regression_FF_RealData_Food.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+i=5;
+load(['mixCop_Global',num2str(i),'_571_statespace_Z_regression_FF_MF_RealData_Food.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixMF = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+
+dim_states = 4;
+num_states = 571;
+id1 = (1:dim_states:dim_states*num_states)';
+id2 = (2:dim_states:dim_states*num_states)';
+id3 = (3:dim_states:dim_states*num_states)';
+id4 = (4:dim_states:dim_states*num_states)';
+
+theta_HMC_beta0 = Post.theta(:,id1);
+theta_HMC_beta1 = Post.theta(:,id2);
+theta_HMC_beta2 = Post.theta(:,id3);
+theta_HMC_beta3 = Post.theta(:,id4);
+
+theta_cop1_MixMF_beta0 = theta_cop1_MixMF(id1,:);
+theta_cop1_MixMF_beta1 = theta_cop1_MixMF(id2,:);
+theta_cop1_MixMF_beta2 = theta_cop1_MixMF(id3,:);
+theta_cop1_MixMF_beta3 = theta_cop1_MixMF(id4,:);
+
+
+theta_cop1_MixN_beta0 = theta_cop1_MixN(id1,:);
+theta_cop1_MixN_beta1 = theta_cop1_MixN(id2,:);
+theta_cop1_MixN_beta2 = theta_cop1_MixN(id3,:);
+theta_cop1_MixN_beta3 = theta_cop1_MixN(id4,:);
+
+
+num_points_ks = 1000;
+subplot(1,2,1);
+scatter(theta_cop1_MixN_beta1(50,:)',theta_cop1_MixN_beta1(51,:)')
+hold on
+scatter(theta_cop1_MixMF_beta1(50,:)',theta_cop1_MixMF_beta1(51,:)')
+scatter(theta_HMC_beta1(:,50),theta_HMC_beta1(:,51))
+xlabel('\beta_{1,50}','FontSize',20);
+ylabel('\beta_{1,51}','FontSize',20);
+
+subplot(1,2,2);
+scatter(theta_cop1_MixN_beta1(100,:)',theta_cop1_MixN_beta1(101,:)')
+hold on
+scatter(theta_cop1_MixMF_beta1(100,:)',theta_cop1_MixMF_beta1(101,:)')
+scatter(theta_HMC_beta1(:,100),theta_HMC_beta1(:,101))
+xlabel('\beta_{1,100}','FontSize',20);
+ylabel('\beta_{1,101}','FontSize',20);
+legend({'MixGau','MixGau-MF','HMC'},'FontSize',20)
+
+%%
+
+nrSamples=100000;
+num_points_ks=1000;
+load('HMC_Z_StateSpace_Agric.mat');
+i=5;
+load(['mixCop_Global',num2str(i),'_571_statespace_Z_regression_FF_RealData_Agric.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+i=5;
+load(['mixCop_Global',num2str(i),'_571_statespace_Z_regression_FF_MF_RealData_Agric.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixMF = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+
+dim_states = 4;
+num_states = 571;
+id1 = (1:dim_states:dim_states*num_states)';
+id2 = (2:dim_states:dim_states*num_states)';
+id3 = (3:dim_states:dim_states*num_states)';
+id4 = (4:dim_states:dim_states*num_states)';
+
+mean_MCMC = mean(Post.theta,1);
+low_quan_MCMC = quantile(Post.theta,0.025);
+upper_quan_MCMC = quantile(Post.theta,0.975);
+
+mean_MixN = mean(theta_cop1_MixN,2);
+low_quan_MixN = quantile(theta_cop1_MixN,0.025,2);
+upper_quan_MixN = quantile(theta_cop1_MixN,0.975,2);
+
+mean_MixMF = mean(theta_cop1_MixMF,2);
+low_quan_MixMF = quantile(theta_cop1_MixMF,0.025,2);
+upper_quan_MixMF = quantile(theta_cop1_MixMF,0.975,2);
+
+% --- MCMC (red) ---
+subplot(2,2,1);
+h1 = plot(mean_MCMC(id1),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id1),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id1),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id1),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id1),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id1),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_MixMF(id1),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_MixMF(id1),'LineWidth',2,'Color','b');
+plot(upper_quan_MixMF(id1),'LineWidth',2,'Color','b');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_0','FontSize',20);
+
+subplot(2,2,2);
+h1 = plot(mean_MCMC(id2),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id2),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id2),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id2),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id2),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id2),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_MixMF(id2),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_MixMF(id2),'LineWidth',2,'Color','b');
+plot(upper_quan_MixMF(id2),'LineWidth',2,'Color','b');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_1','FontSize',20);
+
+
+subplot(2,2,3);
+h1 = plot(mean_MCMC(id3),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id3),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id3),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id3),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id3),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id3),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_MixMF(id3),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_MixMF(id3),'LineWidth',2,'Color','b');
+plot(upper_quan_MixMF(id3),'LineWidth',2,'Color','b');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_2','FontSize',20);
+
+subplot(2,2,4);
+h1 = plot(mean_MCMC(id4),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id4),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id4),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id4),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id4),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id4),'LineWidth',2,'Color','g');
+
+h3 = plot(mean_MixMF(id4),'LineWidth',2,'Color','b');    % store handle
+plot(low_quan_MixMF(id4),'LineWidth',2,'Color','b');
+plot(upper_quan_MixMF(id4),'LineWidth',2,'Color','b');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_3','FontSize',20);
+legend([h1 h2 h3], {'HMC','MixGau','MixGau-MF'}, 'Location','best','FontSize',20);
+
+%% Figure S12 of the online supplement
+
+nrSamples=100000;
+num_points_ks=1000;
+load('HMC_Z_StateSpace_Agric.mat');
+i=5;
+load(['mixCop_Global',num2str(i),'_571_statespace_Z_regression_FF_RealData_Agric.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+i=5;
+load(['mixCop_Global',num2str(i),'_571_statespace_Z_regression_FF_MF_RealData_Agric.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixMF = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+
+dim_states = 4;
+num_states = 571;
+id1 = (1:dim_states:dim_states*num_states)';
+id2 = (2:dim_states:dim_states*num_states)';
+id3 = (3:dim_states:dim_states*num_states)';
+id4 = (4:dim_states:dim_states*num_states)';
+
+theta_HMC_beta0 = Post.theta(:,id1);
+theta_HMC_beta1 = Post.theta(:,id2);
+theta_HMC_beta2 = Post.theta(:,id3);
+theta_HMC_beta3 = Post.theta(:,id4);
+
+theta_cop1_MixMF_beta0 = theta_cop1_MixMF(id1,:);
+theta_cop1_MixMF_beta1 = theta_cop1_MixMF(id2,:);
+theta_cop1_MixMF_beta2 = theta_cop1_MixMF(id3,:);
+theta_cop1_MixMF_beta3 = theta_cop1_MixMF(id4,:);
+
+
+theta_cop1_MixN_beta0 = theta_cop1_MixN(id1,:);
+theta_cop1_MixN_beta1 = theta_cop1_MixN(id2,:);
+theta_cop1_MixN_beta2 = theta_cop1_MixN(id3,:);
+theta_cop1_MixN_beta3 = theta_cop1_MixN(id4,:);
+
+
+num_points_ks = 1000;
+subplot(1,2,1);
+scatter(theta_cop1_MixN_beta1(50,:)',theta_cop1_MixN_beta1(51,:)')
+hold on
+scatter(theta_cop1_MixMF_beta1(50,:)',theta_cop1_MixMF_beta1(51,:)')
+scatter(theta_HMC_beta1(:,50),theta_HMC_beta1(:,51))
+xlabel('\beta_{1,50}','FontSize',20);
+ylabel('\beta_{1,51}','FontSize',20);
+
+subplot(1,2,2);
+scatter(theta_cop1_MixN_beta1(100,:)',theta_cop1_MixN_beta1(101,:)')
+hold on
+scatter(theta_cop1_MixMF_beta1(100,:)',theta_cop1_MixMF_beta1(101,:)')
+scatter(theta_HMC_beta1(:,100),theta_HMC_beta1(:,101))
+xlabel('\beta_{1,100}','FontSize',20);
+ylabel('\beta_{1,101}','FontSize',20);
+legend({'MixGau','MixGau-MF','HMC'},'FontSize',20)
+
+
+%%
+
+
+
+%% Figure S14 of the online supplement
+
+load('mixCop_Global2_200_statespace_Z_regression_FF');
+LB_Global_sim = LB_est;
+
+i=2;
+load(['mixCop_Local',num2str(i),'_50_statespace_sv_Z_regression.mat']);
+LB_Local_sim = LB_est;
+
+subplot(1,3,1);
+plot(LB_Global_sim,'LineWidth',2);
+hold on
+plot(LB_Local_sim,'LineWidth',2);
+xlabel('number of iterations','FontSize',20);
+ylabel('Lower Bound','FontSize',20);
+title('Simulation','FontSize',20);
+
+load('mixCop_Global2_571_statespace_Z_regression_FF_RealData_Agric.mat');
+LB_Global_Agric = LB_est;
+
+load('mixCop_Local2_50_statespace_sv_Z_regression_FF_RealData_Agri.mat');
+LB_Local_Agric = LB_est;
+
+subplot(1,3,2);
+plot(LB_Global_Agric,'LineWidth',2);
+hold on
+plot(LB_Local_Agric,'LineWidth',2);
+xlabel('number of iterations','FontSize',20);
+ylabel('Lower Bound','FontSize',20);
+title('Agric','FontSize',20);
+
+load('mixCop_Global2_571_statespace_Z_regression_FF_RealData_Food.mat');
+LB_Global_Food = LB_est;
+
+load('mixCop_Local2_50_statespace_sv_Z_regression_FF_RealData_Food.mat');
+LB_Local_Food = LB_est;
+
+subplot(1,3,3);
+plot(LB_Global_Agric,'LineWidth',2);
+hold on
+plot(LB_Local_Agric,'LineWidth',2);
+xlabel('number of iterations','FontSize',20);
+ylabel('Lower Bound','FontSize',20);
+title('Food','FontSize',20);
+
+legend({'Global','Local'},'FontSize',20);
+
+
+
+
+%% Figure 10 of the main paper
+
+load('Zdata.mat');
+nrSamples=100000;
+num_points_ks=1000;
+load('HMC_Z_StateSpace_50.mat');
+i=3;
+load(['mixCop_Local',num2str(i),'_50_statespace_sv_Z_regression.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+dim_states = 4;
+num_states = 200;
+id1 = (1:dim_states:dim_states*num_states)';
+id2 = (2:dim_states:dim_states*num_states)';
+id3 = (3:dim_states:dim_states*num_states)';
+id4 = (4:dim_states:dim_states*num_states)';
+
+mean_MCMC = mean(Post.theta,1);
+low_quan_MCMC = quantile(Post.theta,0.025);
+upper_quan_MCMC = quantile(Post.theta,0.975);
+
+mean_MixN = mean(theta_cop1_MixN,2);
+low_quan_MixN = quantile(theta_cop1_MixN,0.025,2);
+upper_quan_MixN = quantile(theta_cop1_MixN,0.975,2);
+
+% --- MCMC (red) ---
+subplot(2,2,1);
+h1 = plot(mean_MCMC(id1),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id1),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id1),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id1),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id1),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id1),'LineWidth',2,'Color','g');
+
+h3 = plot(beta1,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_0','FontSize',20);
+
+subplot(2,2,2);
+h1 = plot(mean_MCMC(id2),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id2),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id2),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id2),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id2),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id2),'LineWidth',2,'Color','g');
+
+h3 = plot(beta2,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_1','FontSize',20);
+
+
+subplot(2,2,3);
+h1 = plot(mean_MCMC(id3),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id3),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id3),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id3),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id3),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id3),'LineWidth',2,'Color','g');
+
+h3 = plot(beta3,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_2','FontSize',20);
+
+subplot(2,2,4);
+h1 = plot(mean_MCMC(id4),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id4),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id4),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id4),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id4),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id4),'LineWidth',2,'Color','g');
+
+h3 = plot(beta4,'LineWidth',2,'Color','b');
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_3','FontSize',20);
+legend([h1 h2 h3], {'HMC','MixGau','true'}, 'Location','best','FontSize',20);
+
+%% Figure S15 of the online supplement
+
+load('FamaFrenchData.mat');
+nrSamples=100000;
+num_points_ks=1000;
+load('HMC_Z_StateSpace_Agric_50.mat');
+i=4;
+load(['mixCop_Local',num2str(i),'_50_statespace_sv_Z_regression_FF_RealData_Agri.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+dim_states = 4;
+num_states = 200;
+id1 = (1:dim_states:dim_states*num_states)';
+id2 = (2:dim_states:dim_states*num_states)';
+id3 = (3:dim_states:dim_states*num_states)';
+id4 = (4:dim_states:dim_states*num_states)';
+
+mean_MCMC = mean(Post.theta,1);
+low_quan_MCMC = quantile(Post.theta,0.025);
+upper_quan_MCMC = quantile(Post.theta,0.975);
+
+mean_MixN = mean(theta_cop1_MixN,2);
+low_quan_MixN = quantile(theta_cop1_MixN,0.025,2);
+upper_quan_MixN = quantile(theta_cop1_MixN,0.975,2);
+
+% --- MCMC (red) ---
+subplot(2,2,1);
+h1 = plot(mean_MCMC(id1),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id1),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id1),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id1),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id1),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id1),'LineWidth',2,'Color','g');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_0','FontSize',20);
+
+subplot(2,2,2);
+h1 = plot(mean_MCMC(id2),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id2),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id2),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id2),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id2),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id2),'LineWidth',2,'Color','g');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_1','FontSize',20);
+
+
+subplot(2,2,3);
+h1 = plot(mean_MCMC(id3),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id3),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id3),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id3),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id3),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id3),'LineWidth',2,'Color','g');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_2','FontSize',20);
+
+subplot(2,2,4);
+h1 = plot(mean_MCMC(id4),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id4),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id4),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id4),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id4),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id4),'LineWidth',2,'Color','g');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_3','FontSize',20);
+legend([h1 h2], {'HMC','MixGau'}, 'Location','best','FontSize',20);
+
+
+
+
+
+
+
+%% Figure S16 of the online supplement
+
+load('FamaFrenchData.mat');
+nrSamples=100000;
+num_points_ks=1000;
+load('HMC_Z_StateSpace_Food_50.mat');
+i=4;
+load(['mixCop_Local',num2str(i),'_50_statespace_sv_Z_regression_FF_RealData_Food.mat']);
+for k = 1:length(mix_Mu)
+    mix_Precs{k,1} = mix_T{k,1}*mix_T{k,1}';
+end
+theta_cop1_MixN = SampleFromMixture_plot(log(mix_Weights),mix_Mu,mix_Precs,nrSamples);
+
+dim_states = 4;
+num_states = 200;
+id1 = (1:dim_states:dim_states*num_states)';
+id2 = (2:dim_states:dim_states*num_states)';
+id3 = (3:dim_states:dim_states*num_states)';
+id4 = (4:dim_states:dim_states*num_states)';
+
+mean_MCMC = mean(Post.theta,1);
+low_quan_MCMC = quantile(Post.theta,0.025);
+upper_quan_MCMC = quantile(Post.theta,0.975);
+
+mean_MixN = mean(theta_cop1_MixN,2);
+low_quan_MixN = quantile(theta_cop1_MixN,0.025,2);
+upper_quan_MixN = quantile(theta_cop1_MixN,0.975,2);
+
+% --- MCMC (red) ---
+subplot(2,2,1);
+h1 = plot(mean_MCMC(id1),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id1),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id1),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id1),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id1),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id1),'LineWidth',2,'Color','g');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_0','FontSize',20);
+
+subplot(2,2,2);
+h1 = plot(mean_MCMC(id2),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id2),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id2),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id2),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id2),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id2),'LineWidth',2,'Color','g');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_1','FontSize',20);
+
+
+subplot(2,2,3);
+h1 = plot(mean_MCMC(id3),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id3),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id3),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id3),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id3),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id3),'LineWidth',2,'Color','g');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_2','FontSize',20);
+
+subplot(2,2,4);
+h1 = plot(mean_MCMC(id4),'LineWidth',2,'Color','r');   % store handle
+hold on
+plot(low_quan_MCMC(id4),'LineWidth',2,'Color','r');
+plot(upper_quan_MCMC(id4),'LineWidth',2,'Color','r');
+
+% --- Global / MixN (green) ---
+h2 = plot(mean_MixN(id4),'LineWidth',2,'Color','g');    % store handle
+plot(low_quan_MixN(id4),'LineWidth',2,'Color','g');
+plot(upper_quan_MixN(id4),'LineWidth',2,'Color','g');
+
+
+xlabel('Time','FontSize',20);
+set(gca,'FontSize',20);
+title('\beta_3','FontSize',20);
+legend([h1 h2], {'HMC','MixGau'}, 'Location','best','FontSize',20);
+
+%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
