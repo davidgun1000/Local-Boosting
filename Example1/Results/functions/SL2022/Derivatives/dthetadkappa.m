@@ -1,0 +1,36 @@
+function dtheta_dkappa = dthetadkappa(phi,kappa,z,eps,eta,l,Transf)
+
+if strcmp(Transf,'GH')
+    if size(eta,2)~=2
+        error('GH transformation requires 2 parameters. Make sure eta has two columns')
+    end
+end
+if strcmp(Transf,'iGH')
+    if size(eta,2)~=2
+        error('iGH transformation requires 2 parameters. Make sure eta has two columns')
+    end
+end
+
+switch Transf
+    case ''
+        dit = 1;
+    case 'YJ'
+        dit = diYJ(phi,eta);
+    case 'GH'
+        dit = digh(phi,eta(:,1),eta(:,2),theta);
+    case 'iGH'
+        dit = dgh(phi,eta(:,1),eta(:,2));
+    case 'YJdouble'
+        it1 = iYJ(phi,eta(:,1));
+        dit1 = diYJ(phi,eta(:,1));
+        dit2 = diYJ(it1,eta(:,2));
+        dit = dit1.*dit2;
+end
+
+
+n = size(kappa,1);
+[dB_dkappa,dd_dkappa] = dBd_dkappa(kappa);
+In = sparse(1:n,1:n,1,n,n);
+dphi_dkappa = kron(z',In)*dB_dkappa+sparse(1:n,1:n,eps,n,n)*dd_dkappa;
+
+dtheta_dkappa = sparse(1:n,1:n,dit.*exp(l),n,n)*dphi_dkappa;
